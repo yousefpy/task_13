@@ -1,20 +1,38 @@
 from django.shortcuts import render, redirect
-from .models import Restaurant, Item
+from .models import Restaurant, Item , FavoriteRestaurant
 from .forms import RestaurantForm, ItemForm, SignupForm, SigninForm
 from django.contrib.auth import login, authenticate, logout
 from django.db.models import Q
-
+from django.http import JsonResponse
 # This view will be used to favorite a restaurant
 def restaurant_favorite(request, restaurant_id):
-    
-    return
+    restaurant_obj = Restaurant.objects.get(id=restaurant_id)
+    fav_obj, create = FavoriteRestaurant.objects.get_or_create(restaurant= restaurant_obj, user=request.user)
+
+    if create:
+        action = "favorite"
+    else:
+        action = "unfavorite"
+        fav_obj.delete()
+
+    data = {
+    "action" : action,
+    }
+    return JsonResponse(data)
 
 
 # This view will be used to display only restaurants a user has favorited
 def favorite_restaurants(request):
-    
-    return
+    if request.user.is_anonymous:
+        return redirect ('signin')
+    restaurants = Restaurant.objects.all()
+    my_fav = FavoriteRestaurant.objects.filter(user=request.user)
+    restaurants_fav = [fav.restaurant for fav in my_fav]
 
+    context = {
+       "restaurants_fav" : restaurants_fav,
+    }
+    return render(request, 'fav-list.html', context)
 
 def no_access(request):
     return render(request, 'no_access.html')
@@ -59,7 +77,14 @@ def signout(request):
     return redirect("signin")
 
 def restaurant_list(request):
+    # if request.user.is_anonymous:
+    #     return redirect ('signin')
     restaurants = Restaurant.objects.all()
+    restaurants_fav = []
+    if request.user.is_authenticated:
+        my_fav = FavoriteRestaurant.objects.filter(user=request.user)
+        restaurants_fav = [fav.restaurant for fav in my_fav]
+
     query = request.GET.get('q')
     if query:
         # Not Bonus. Querying through a single field.
@@ -73,7 +98,8 @@ def restaurant_list(request):
         ).distinct()
         #############
     context = {
-       "restaurants": restaurants
+       "restaurants": restaurants,
+       "restaurants_fav" : restaurants_fav,
     }
     return render(request, 'list.html', context)
 
