@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Play Ground{% endblock title %}
+
+{% block content %}
+<br>
+<div class="row">
+    {% for event in events %}
+    <div class="card" style="width: 18rem;">
+  <img class="card-img-top" src="{{event.actor.avatar_url}}" alt="Card image cap">
+  <div class="card-body">
+    <h5 class="card-title">{{event.actor.display_login}}</h5>
+  </div>
+</div>
+    {% endfor %}
+</div>
+{% endblock content %}

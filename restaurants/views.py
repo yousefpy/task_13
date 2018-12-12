@@ -4,6 +4,7 @@ from .forms import RestaurantForm, ItemForm, SignupForm, SigninForm
 from django.contrib.auth import login, authenticate, logout
 from django.db.models import Q
 from django.http import JsonResponse
+import requests
 # This view will be used to favorite a restaurant
 def restaurant_favorite(request, restaurant_id):
     restaurant_obj = Restaurant.objects.get(id=restaurant_id)
@@ -169,3 +170,12 @@ def restaurant_delete(request, restaurant_id):
         return redirect('no-access')
     restaurant_obj.delete()
     return redirect('restaurant-list')
+
+def a_request(request):
+    req = requests.get('https://api.github.com/events')
+    jres = req.json()
+    context = {
+    "events" : jres,
+    }
+    return render(request,'playground.html', context)
+
